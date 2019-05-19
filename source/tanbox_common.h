@@ -7,8 +7,8 @@
 #define BOX_EXPORT       __declspec(dllexport)
 #define BOX_IMPORT       __declspec(dllimport)
 #else
-#define TABBOX_EXPORT
-#define TABBOX_IMPORT
+#define BOX_IMPORT
+#define BOX_IMPORT
 #endif
 
 #ifdef __cplusplus
