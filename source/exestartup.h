@@ -20,15 +20,18 @@ int wmain(int argc, wchar_t** argv)
     {
         size_t u8length, u16length;
         if (i == 0)
-            arg = COMMAND_STR;
+        {
+            newargv[i] = (char*)malloc(strlen(COMMAND_STR) + 1);
+            strcpy(newargv[i], COMMAND_STR);
+        }
         else
+        {
             arg = argv[i];
-
-        u16length = wcslen(arg) + 1;
-        u8length = get_u8len_from_u16(arg, u16length);
-
-        newargv[i] = (char*) malloc(u8length);
-        utf16_to_utf8(arg, u16length, newargv[i], u8length);
+            u16length = wcslen(arg) + 1;
+            u8length = get_u8len_from_u16(arg, u16length);
+            newargv[i] = (char*)malloc(u8length);
+            utf16_to_utf8(arg, u16length, newargv[i], u8length);
+        }
     }
     newargv[argc] = NULL;
     
