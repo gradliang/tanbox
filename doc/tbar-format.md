@@ -39,7 +39,7 @@ TBA文件，整个文件由四部分组成，分别是：
 |uid|4字节|默认为0xFFFFFFFF|
 |gid|4字节|默认为0xFFFFFFFF|
 |CRC|4字节|文件内容的CRC32值|
-|mode|2字节|文件的权限mode位列表<br/>bit0: 其他用户执行<br/>bit1: 其他用户写<br/>bit2: 其他用户读<br/>bit3: 组执行<br/>bit4: 组写<br/>bit5: 组读<br/>bit6: 用户执行<br/>bit7: 用户写<br/>bit8: 用户读|
+|mode|2字节|文件的权限mode位列表<br/>bit0: 其他用户执行<br/>bit1: 其他用户写<br/>bit2: 其他用户读<br/>bit4: 组执行<br/>bit5: 组写<br/>bit6: 组读<br/>bit8: 用户执行<br/>bit9: 用户写<br/>bit10: 用户读<br/>bit12: sticky位<br/>bit13: 执行时设置GID<br/>bit14: 执行时设置UID|
 |属性位|2字节|文件的属性位列表<br/>bit0: 目录标志<br/>bit1: 只读<br/>bit2: 隐藏<br/>bit3: 存档<br/>bit4: 压缩<br/>bit5: 加密|
 |uname|8字节|在字符串表中的偏移，不同文件系统可能有特殊意义|
 |gname|8字节|在字符串表中的偏移，不同文件系统可能有特殊意义|
