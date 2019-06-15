@@ -81,7 +81,7 @@ struct Elf64_Ehdr
 |EI_OSABI|7|OS/ABI|
 |EI_ABIVERSION|8|ABI版本|
 |EI_PAD|9|补齐数据起始|
-|EI_NIDENT|16|e_ident数组大小|
+|EI_NIDENT|16|e_ident数组大小，常数|
 
 #### e_ident[EI_CLASS]
 
@@ -150,30 +150,54 @@ tanbox-image映像必须包含程序头
 ```
 struct Elf32_Phdr
 {
-  Elf32_Word    p_type;			/* Segment type */
-  Elf32_Off     p_offset;		/* Segment file offset */
-  Elf32_Addr    p_vaddr;		/* Segment virtual address */
-  Elf32_Addr    p_paddr;		/* Segment physical address */
-  Elf32_Word    p_filesz;		/* Segment size in file */
-  Elf32_Word    p_memsz;		/* Segment size in memory */
-  Elf32_Word    p_flags;		/* Segment flags */
-  Elf32_Word    p_align;		/* Segment alignment */
+  Elf32_Word    p_type;         // 段的类型
+  Elf32_Off     p_offset;       // 段在文件中的偏移
+  Elf32_Addr    p_vaddr;        // 段在内存中的虚拟地址
+  Elf32_Addr    p_paddr;        // 段在内存中的物理地址，保留给用物理地址的系统使用
+  Elf32_Word    p_filesz;       // 段在文件中的大小，以字节计算
+  Elf32_Word    p_memsz;        // 段在内存中的大小，以字节计算
+  Elf32_Word    p_flags;        // 段标志
+  Elf32_Word    p_align;        // 段对齐，必须是2的次幂
 };
 ```
 64位映像程序头：
 ```
 struct Elf64_Phdr
 {
-  Elf64_Word    p_type;			/* Segment type */
-  Elf64_Word    p_flags;		/* Segment flags */
-  Elf64_Off     p_offset;		/* Segment file offset */
-  Elf64_Addr    p_vaddr;		/* Segment virtual address */
-  Elf64_Addr    p_paddr;		/* Segment physical address */
-  Elf64_Xword   p_filesz;		/* Segment size in file */
-  Elf64_Xword   p_memsz;		/* Segment size in memory */
-  Elf64_Xword   p_align;		/* Segment alignment */
+  Elf64_Word    p_type;         // 段的类型
+  Elf64_Word    p_flags;        // 段标志
+  Elf64_Off     p_offset;       // 段在文件中的偏移
+  Elf64_Addr    p_vaddr;        // 段在内存中的虚拟地址
+  Elf64_Addr    p_paddr;        // 段在内存中的物理地址，保留给用物理地址的系统使用
+  Elf64_Xword   p_filesz;       // 段在文件中的大小，以字节计算
+  Elf64_Xword   p_memsz;        // 段在内存中的大小，以字节计算
+  Elf64_Xword   p_align;        // 段对齐，必须是2的次幂
 };
 ```
+
+### p_type: 段的类型
+
+|段类型|值|描述|
+|--	|--	|--	|
+|PT_NULL|0|不使用|
+|PT_LOAD|1|可装载段，段的文件占用大小由p_filesz指定，段的内存占用大小由p_memsz指定。如果p_memsz大于p_filesz，则额外部分用0填充。p_filesz不能大于p_memsz。多个PT_LOAD应该以p_vaddr升序排列|
+|PT_DYNAMIC|2|动态连接表|
+|PT_INTERP|3|动态链接器文件名（全路径）|
+|PT_NOTE|4|Note sections|
+|PT_SHLIB|5|保留|
+|PT_PHDR|6|程序头表（就是程序头自己本身）|
+|PT_TLS|7|线程局部存储段|
+|PT_NUM|8|Number of defined types|
+
+### p_flags: 段标志
+|段对齐|值|描述|
+|--	|--	|--	|
+|PF_X|0x01|段可执行|
+|PF_W|0x02|段可写|
+|PF_R|0x04|段可读|
+
+
+
 
 
 
