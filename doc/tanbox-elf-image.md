@@ -193,10 +193,9 @@ struct Elf64_Phdr
 |PT_NUM|8|Number of defined types|
 |PT_FIXUP|1981|基地址重定位表|
 |PT_RESOURCE|1991|资源数据|
-|PT_RELINFO|1997|重定位信息表|
-|PT_GLOBALSYM|1998|全局符号表|
-|PT_WINIMP|3100|Windows样式导入表|
-|PT_WINEXP|3101|Windows样式导出表|
+|PT_LTSYM|1997|装载时符号表|
+|PT_RELINFO|1998|重定位信息表|
+
 
 ### p_flags: 段标志
 |段对齐|值|描述|
@@ -259,7 +258,60 @@ struct Elf64_Fixbase
 装配表实际上就是一个2字节整数的数组。其组成根据不同的CPU类型，会有不同的结构。
 
 ### 装配表 - i386
-i386的装配表中，数组每一项的2字节整数，全部位都是用于表示装配位置在页中的偏移量。
+i386的装配表中，数组每一项的2字节整数，全部位都是用于表示装配位置在页中的偏移量。装配目标是一个32位地址。
+
+### 装配表 - x86-64
+x86-64的装配表中，数组每一项的2字节整数，全部位都是用于表示装配位置在页中的偏移量。装配目标是一个64位地址。
+
+---
+## PT_LTSYM 装载时符号表
+装载时符号表，字面意思是指模块被装载时，整个模块给装载器暴露使用的符号表。
+可以把所有全局变量都放到装载时符号表，这样省时省力；也可以指定某些真正需要的符号放在装载时符号表，省点存储空间以及加快模块装载速度与符号搜索速度。
+
+装载时符号表组成结构如下：
+
+|字段|大小|说明|
+|--	|--	|--	|
+|s_symnum|Elf32_Word|符号个数，下面用N代表|
+|s_flag|Elf32_Word|标志，保留，必须为0|
+|s_dsoname|Elf32_Addr/Elf64_Addr|指向dso文件名字符串的地址|
+|s_expaddrs|Elf32_Addr/Elf64_Addr * N|符号对应的地址表|
+|s_names|Elf32_Addr/Elf64_Addr * N|符号名对应的地址表|
+|	|	|	|
+|	|	|	|
+|	|	|	|
+|	|	|	|
+|	|	|	|
+|	|	|	|
+|	|	|	|
+|	|	|	|
+|	|	|	|
+
+
+
+```
+typedef struct
+{
+  Elf32_Word	st_name;		/* Symbol name (string tbl index) */
+  Elf32_Addr	st_value;		/* Symbol value */
+  Elf32_Word	st_size;		/* Symbol size */
+  unsigned char	st_info;		/* Symbol type and binding */
+  unsigned char	st_other;		/* Symbol visibility */
+  Elf32_Section	st_shndx;		/* Section index */
+} Elf32_Sym;
+
+typedef struct
+{
+  Elf64_Word	st_name;		/* Symbol name (string tbl index) */
+  unsigned char	st_info;		/* Symbol type and binding */
+  unsigned char st_other;		/* Symbol visibility */
+  Elf64_Section	st_shndx;		/* Section index */
+  Elf64_Addr	st_value;		/* Symbol value */
+  Elf64_Xword	st_size;		/* Symbol size */
+} Elf64_Sym;
+```
+
+
 
 
 
