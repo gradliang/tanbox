@@ -264,6 +264,10 @@ i386的装配表中，数组每一项的2字节整数，全部位都是用于表
 x86-64的装配表中，数组每一项的2字节整数，全部位都是用于表示装配位置在页中的偏移量。装配目标是一个64位地址。
 
 ---
+## PT_RESOURCE 资源数据
+资源数据实际上存储为一个打包好TBA文件，原封不动地存在PT_RESOURCE段中
+
+---
 ## PT_LTSYM 装载时符号表
 装载时符号表，字面意思是指模块被装载时，整个模块给装载器暴露使用的符号表。
 可以把所有全局变量都放到装载时符号表，这样省时省力；也可以指定某些真正需要的符号放在装载时符号表，省点存储空间以及加快模块装载速度与符号搜索速度。
@@ -275,18 +279,41 @@ x86-64的装配表中，数组每一项的2字节整数，全部位都是用于�
 |s_symnum|Elf32_Word|符号个数，下面用N代表|
 |s_flag|Elf32_Word|标志，保留，必须为0|
 |s_dsoname|Elf32_Addr/Elf64_Addr|指向dso文件名字符串的地址|
-|s_expaddrs|Elf32_Addr/Elf64_Addr * N|符号对应的地址表|
-|s_names|Elf32_Addr/Elf64_Addr * N|符号名对应的地址表|
-|	|	|	|
-|	|	|	|
-|	|	|	|
-|	|	|	|
-|	|	|	|
-|	|	|	|
-|	|	|	|
-|	|	|	|
-|	|	|	|
+|s_expaddrs [ ]|Elf32_Addr/Elf64_Addr * N|符号对应的地址表|
+|s_names [ ]|Elf32_Addr/Elf64_Addr * N|符号名对应的地址表|
+|s_nbucket|Elf32_Word|哈希表中bucket的个数，bucket [hashkey % nbucket]保存第0个可能匹配的符号的索引和chain表中可能的下一个符号的索引|
+|s_bucket[0]|Elf32_Word|bucket[0]中第0个可能匹配的符号的索引|
+|s_bucket[1]|Elf32_Word|bucket[1]中第0个可能匹配的符号的索引|
+|...|...|...|
+|s_bucket [s_nbucket - 1]|Elf32_Word|bucket[s_nbucket - 1]中第0个可能匹配的符号的索引|
+|chain[0]|Elf32_Word|如果第0个符号查找不匹配，这里记录下一个可能匹配的符号索引|
+|chain[1]|Elf32_Word|如果第1个符号查找不匹配，这里记录下一个可能匹配的符号索引|
+|...|...|...|
+|chain [s_symnum - 1]|Elf32_Word|如果第s_symnum - 1个符号查找不匹配，这里记录下一个可能匹配的符号索引|
+|s_strtab|n字节|这里保存着一个字符串表，主要包含dso文件名和符号表的符号|
 
+chain数组记录中，如果不存在下一个可能符号的符号，则这里应该存放STN_UNDEF (0)
+
+符号名的Hash算法如下：
+```
+unsigned long
+elf_hash(const unsigned char *name)
+{
+    unsigned long h = 0, g;
+    while (*name)
+    {
+        h = (h << 4) + *name++;
+        if (g = h & 0xf0000000)
+            h ^= g >> 24;
+        h &= ~g;
+    }
+    return h;
+}
+```
+
+
+
+## PT_RELINFO
 
 
 ```
