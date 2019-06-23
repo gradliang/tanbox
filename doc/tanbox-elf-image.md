@@ -194,7 +194,7 @@ struct Elf64_Phdr
 |PT_FIXUP|1981|基地址重定位表|
 |PT_RESOURCE|1991|资源数据|
 |PT_LTSYM|1997|装载时符号表|
-|PT_RELINFO|1998|重定位信息表|
+|PT_IMPREL|1998|导入重定位信息表|
 
 
 ### p_flags: 段标志
@@ -315,8 +315,65 @@ elf_hash(const unsigned char *name)
 ```
 
 
+## PT_IMPREL
+导入重定位信息表，用于程序依赖动态库的时候，在导入动态库中的函数与变量，解决符号重定位的信息表格。
 
-## PT_RELINFO
+导入重定位信息表组成结构如下：
+
+|字段|大小|说明|
+|--	|--	|--	|
+|i_rev|Elf32_Addr/Elf64_Addr|保留|
+|i_slotnum|Elf32_Word|需要导入重定位的符号个数，下面用N代表|
+|i_dsonum|Elf32_Word|依赖的动态库个数，下面用M代表|
+|i_dsoname[0]|Elf32_Addr/Elf64_Addr|第0个dso名字|
+|...|...|...|
+|i_dsoname [M - 1]|Elf32_Addr/Elf64_Addr|第M-1个dso名字|
+|i_slotstart[0]|Elf32_Word|第0个dso首个slot在整个slot表的偏移|
+|...|...|...|
+|i_slotstart [M - 1]|Elf32_Word|第M-1个dso首个slot在整个slot表的偏移|
+|i_slot[0]|Elf32_Addr/Elf64_Addr|第0个slot|
+||||
+|i_slot[N-1]|Elf32_Addr/Elf64_Addr|第N-1个slot|
+|i_strtab|n字节|这里保存着一个字符串表，主要包含dso文件名和符号表的符号|
+
+这里的slot数组记录了所有需要导入的符号与重定位信息。
+每一个需要依赖的dso动态库对应若干个slot，i_slotstart数组记录了每个dso对应的slot起始索引值。
+每个dso动态库对应的slot列表都是以0作为结束标志。
+
+slot的意义解释如下：
+1. 当slot值为0时，表示结束标志。以下条件都是与slot不为0为前提条件。
+2. 当slot值不为0时，表示为正常的slot序列串。每个slot为一个ADDR大小的整数，32位时为4字节，64位时为8字节。
+
+基于以上slot值不为0的情况，可以分为：
+1. 当最高位为0时，该slot与下一个slot组合在一起，2个slot合成的信息来描述一个导入重定位信息。
+2. 当最高位为1时，该slot与下面2个slot组合在一起，3个slot合成的信息来描述一个导入重定位信息。
+
+注意：当32位时，最高位为Bit-31；当64位时，最高位为Bit-63
+
+2个slot合成的导入重定位信息描述如下：
+
+|字段|大小|说明|
+|--	|--	|--	|
+|flag|最高位<br/>bit31 (32位时)<br/>bit63: (64位时)|标志，值为0|
+|i_symname|bit0~bit30（32位时）<br/>bit0~bit62（64位时）|符号名的地址|
+|i_addr|Elf32_Addr/Elf64_Addr|地址值。未解决符号装载之前，这里保存为数值(size_t)(-1)；装载器找到动态库中的符号之后，这里的值会被改写，装载器会把符号的地址值保存在这里|
+
+3个slot合成的导入重定位信息描述如下：
+
+|字段|大小|说明|
+|--	|--	|--	|
+|flag|最高位<br/>bit31 (32位时)<br/>bit63: (64位时)|标志，值为1|
+|i_symname|bit0~bit30（32位时）<br/>bit0~bit62（64位时）|符号名的地址|
+|i_offset|Elf32_Addr/Elf64_Addr|重定位偏移值。这里指出需要重定位的位置|
+|i_extra|Elf32_Addr/Elf64_Addr|重定位的额外信息<br/>dd|
+
+---
+
+1.重定位类型
+2.重定位位置
+3。name
+
+
 
 
 ```
@@ -330,7 +387,8 @@ typedef struct
   Elf32_Section	st_shndx;		/* Section index */
 } Elf32_Sym;
 
-typedef struct
+typedef   6+96+652m1
+    mo
 {
   Elf64_Word	st_name;		/* Symbol name (string tbl index) */
   unsigned char	st_info;		/* Symbol type and binding */
